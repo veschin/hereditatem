@@ -1,7 +1,8 @@
 (ns core
   (:require [cljfx.api :as fx]
             [components.inputs :as input]
-            [cljfx.fx.circle :as circle]))
+            [db :refer [db-spec]]
+            [clojure.java.jdbc :as jdbc]))
 
 (defn select-values [map ks]
   (for [key ks]
@@ -9,12 +10,12 @@
 
 (def *state (atom {}))
 
-(def keywords {:input-section [:first-name :patronomyc :last-name :telephone :birth-date :weigth :height]})
-(def labels {:input-section {:first-name "Имя"
+(def keywords {:input-section [:first_name :patronomyc :last_name :telephone :birth_date :weigth :height]})
+(def labels {:input-section {:first_name "Имя"
                              :patronomyc "Отчество"
-                             :last-name "Фамилия"
+                             :last_name "Фамилия"
                              :telephone "Телефон в формате *+7"
-                             :birth-date "Дата рождения *д.м.г"
+                             :birth_date "Дата рождения *д.м.г"
                              :weigth "Вес *кг"
                              :height "Рост *см"}})
 (def colors {:status-color (atom "#91dba4")})
@@ -61,12 +62,12 @@
         :children [{:fx/type :v-box
                     :padding 40
                     :spacing 20
-                    :children (conj (input-section keys) (button "Забрать данные" (fn [])))}
+                    :children (conj (input-section keys) (button "Забрать данные" (fn [] (jdbc/insert! db-spec :patients @*state))))}
                    {:fx/type :h-box
                     :padding 60
                     :spacing 20
-                    :children (let [status-color ((comp deref :status-color) colors)]
-                                [(status-circle)
+                    :children (let [status-color (:status-color colors)]
+                                [status-circle
                                  (button "Изменить" (fn [] (reset! status-color "#e36f6f")))
                                  (button "Удалить" (fn [] (reset! status-color "#91dba4")))])}]}}}))))
 
